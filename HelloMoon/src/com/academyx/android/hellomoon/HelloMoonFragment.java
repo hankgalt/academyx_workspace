@@ -16,6 +16,12 @@ public class HelloMoonFragment extends Fragment {
 	private Button mPlayButton;
 	private Button mStopButton;
 	
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setRetainInstance(true);
+	}
+
 	public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.fragment_hello_moon, parent, false);
 		
@@ -43,6 +49,30 @@ public class HelloMoonFragment extends Fragment {
 		super.onDestroy();
 		Log.d(TAG, "onDestroy() called");
 		mPlayer.stop();
+	}
+	
+	@Override
+	public void onStart() {
+		super.onStart();
+		Log.d(TAG, "onStart() called");
+	}
+	
+	@Override
+	public void onPause() {
+		super.onPause();
+		Log.d(TAG, "onPause() called");
+	}
+	
+	@Override
+	public void onResume() {
+		super.onResume();
+		Log.d(TAG, "onResume() called");
+	}
+	
+	@Override
+	public void onStop() {
+		super.onStop();
+		Log.d(TAG, "onStop() called");
 	}
 
 }
