@@ -1,0 +1,237 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en"><head><title>Android Text Links Using Linkify</title>
+
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta http-equiv="Content-Language" content="en-us">
+	<meta name="author" content="Jon Parise">
+	<meta name="MSSmartTagsPreventParsing" content="true">
+	<meta name="viewport" content="width=700">
+	
+	<link rel="stylesheet" type="text/css" media="screen" href="Android%20Text%20Links%20Using%20Linkify_files/screen.css">
+	<link rel="alternate" href="http://www.indelible.org/feeds/ink/index.xml" title="Indelible Ink" type="application/atom+xml">
+	
+	<link rel="alternate" href="http://www.indelible.org/feeds/ink/android.xml" title="Indelible Ink (android)" type="application/atom+xml">
+	
+</head>
+<body data-twttr-rendered="true" id="indelible">
+
+<div id="container">
+
+<div id="header">
+<div id="nav">
+<ul>
+	<li><a href="http://www.indelible.org/ink/">ink</a></li>
+	<li><a href="http://www.indelible.org/projects/">projects</a></li>
+	<li><a href="http://www.indelible.org/feeds/">feeds</a></li>
+	<li><a href="http://www.indelible.org/about/">about</a></li>
+</ul>
+<span id="site"><a href="http://www.indelible.org/">Indelible.org</a></span>
+<span id="section">– Indelible Ink</span>
+</div>
+</div> <!-- /header -->
+
+<div id="ink">
+<h1>Android Text Links Using Linkify</h1>
+<div id="date">April 09, 2010</div>
+
+<p>The Android framework provides an easy way to automatically convert text
+patterns into clickable links.  By default, Android knows how to recognize web
+URLs, email addresses, map addresses, and phone numbers, but it also includes
+a flexible mechanism for recognizing and converting additional text patterns,
+as well.</p>
+
+<p>The <a href="http://android-developers.blogspot.com/">Android Developers Blog</a> has an article entitled <a href="http://android-developers.blogspot.com/2008/03/linkify-your-text.html">Linkify your
+Text!</a> that provides a nice overview of the system.  It discusses how the
+<a href="http://developer.android.com/reference/android/text/util/Linkify.html">Linkify class</a> can be used to enable the default link patterns and
+then continues with a more advanced <a href="http://c2.com/cgi/wiki?WikiWord">WikiWords</a> example that demonstrates
+custom links.  That article is a fine introduction to the system, so the rest
+of this article will primarily focus on details not covered therein.</p>
+
+<p>All of the examples in this article are based on the <a href="http://developer.android.com/reference/android/widget/TextView.html">TextView</a> widget.  The
+<code>Linkify</code> class can also be used to add links to <a href="http://developer.android.com/reference/android/text/Spannable.html">Spannable</a> text, but those
+use cases won't be covered here because their usage is nearly identical to the
+TextView cases.</p>
+
+<h2>TextView AutoLinking</h2>
+
+<p>The TextView widget features an <a href="http://developer.android.com/reference/android/widget/TextView.html#attr_android:autoLink"><code>android:autoLink</code></a> attribute that
+controls the types of text patterns that are automatically recognized and
+converted to clickable links.  This attribute is a convenient way to enable
+one or more of the default link patterns because it can be configured directly
+from a layout without involving any additional code.</p>
+
+<p>However, for those cases where programmatically setting this value is useful,
+the <a href="http://developer.android.com/reference/android/widget/TextView.html#setAutoLinkMask%28int%29"><code>setAutoLinkMask()</code></a> function exists.</p>
+
+<p>There is one important caveat to using this "auto-linking" functionality,
+however.  It appears that when "auto-linking" is enabled, all additional
+Linkify operations are ignored.  It's unclear whether this behavior is
+intentional or inadvertent, so it's possible things could change in future
+released of the Android SDK.  Consider disabling "auto-linking" before using
+any of the Linkify operations discussed below.</p>
+
+<div class="highlight"><pre><code class="java">    <span class="c1">// Disable the text view's auto-linking behavior</span>
+    <span class="n">textView</span><span class="o">.</span><span class="na">setAutoLinkMask</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span> 
+</code></pre></div>
+
+
+<h2>Default Link Patterns</h2>
+
+<p>Enabling support for one of Android's default link patterns is very easy.
+Simply use the <a href="http://developer.android.com/reference/android/text/util/Linkify.html#addLinks%28android.widget.TextView,%20int%29"><code>addLinks(TextView text, int mask)</code></a> function and
+specify a mask that describes the desired link types.</p>
+
+<div class="highlight"><pre><code class="java">    <span class="kn">import</span> <span class="nn">android.text.util.Linkify</span><span class="o">;</span>
+
+    <span class="c1">// Recognize phone numbers and web URLs</span>
+    <span class="n">Linkify</span><span class="o">.</span><span class="na">addLinks</span><span class="o">(</span><span class="n">text</span><span class="o">,</span> <span class="n">Linkify</span><span class="o">.</span><span class="na">PHONE_NUMBERS</span> <span class="o">|</span> <span class="n">Linkify</span><span class="o">.</span><span class="na">WEB_URLS</span><span class="o">);</span>
+
+    <span class="c1">// Recognize all of the default link text patterns </span>
+    <span class="n">Linkify</span><span class="o">.</span><span class="na">addLinks</span><span class="o">(</span><span class="n">text</span><span class="o">,</span> <span class="n">Linkify</span><span class="o">.</span><span class="na">ALL</span><span class="o">);</span>
+
+    <span class="c1">// Disable all default link detection</span>
+    <span class="n">Linkify</span><span class="o">.</span><span class="na">addLinks</span><span class="o">(</span><span class="n">text</span><span class="o">,</span> <span class="mi">0</span><span class="o">);</span>
+</code></pre></div>
+
+
+<h2>Custom Link Patterns</h2>
+
+<p>Detecting additional types of link patterns is easy, too.  The
+<a href="http://developer.android.com/reference/android/text/util/Linkify.html#addLinks%28android.widget.TextView,%20java.util.regex.Pattern,%20java.lang.String%29"><code>addLinks(TextView text, Pattern pattern, String scheme)</code></a>
+function detects links based on a regular expression pattern.</p>
+
+<div class="highlight"><pre><code class="java">    <span class="kn">import</span> <span class="nn">java.util.regex.Pattern</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">android.text.util.Linkify</span><span class="o">;</span>
+
+    <span class="c1">// Detect US postal ZIP codes and link to a lookup service</span>
+    <span class="n">Pattern</span> <span class="n">pattern</span> <span class="o">=</span> <span class="n">Pattern</span><span class="o">.</span><span class="na">compile</span><span class="o">(</span><span class="s">"\\d{5}([\\-]\\d{4})?"</span><span class="o">);</span>
+    <span class="n">String</span> <span class="n">scheme</span> <span class="o">=</span> <span class="s">"http://zipinfo.com/cgi-local/zipsrch.exe?zip="</span><span class="o">;</span>
+    <span class="n">Linkify</span><span class="o">.</span><span class="na">addLinks</span><span class="o">(</span><span class="n">text</span><span class="o">,</span> <span class="n">pattern</span><span class="o">,</span> <span class="n">scheme</span><span class="o">);</span>
+</code></pre></div>
+
+
+<p>The text is scanned for pattern matches.  Matches are converted to links that
+are generated by appending the matched text to the provided URL scheme base.</p>
+
+<p>Note that the scheme doesn't have to be an external web-like URL.  It could
+also be an Android Content URI that can be used in conjunction with a <a href="http://developer.android.com/guide/topics/providers/content-providers.html">content
+provider</a> to reference application resources, for example.</p>
+
+<h2>Match Filters</h2>
+
+<p>Regular expressions are a very powerful way to match text patterns, but
+sometimes a bit more flexibility is needed.  The <a href="http://developer.android.com/reference/android/text/util/Linkify.MatchFilter.html">MatchFilter</a> class
+provides this capability by giving user code a chance to evaluate the link
+worthiness of some matched text.</p>
+
+<div class="highlight"><pre><code class="java">    <span class="kn">import</span> <span class="nn">java.util.regex.Pattern</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">android.text.util.Linkify</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">android.text.util.Linkify.MatchFilter</span><span class="o">;</span>
+
+    <span class="c1">// A match filter that only accepts odd numbers.</span>
+    <span class="n">MatchFilter</span> <span class="n">oddFilter</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MatchFilter</span><span class="o">()</span> <span class="o">{</span>
+        <span class="kd">public</span> <span class="kd">final</span> <span class="kt">boolean</span> <span class="nf">acceptMatch</span><span class="o">(</span><span class="n">CharSequence</span> <span class="n">s</span><span class="o">,</span> <span class="kt">int</span> <span class="n">start</span><span class="o">,</span> <span class="kt">int</span> <span class="n">end</span><span class="o">)</span> <span class="o">{</span>
+            <span class="kt">int</span> <span class="n">n</span> <span class="o">=</span> <span class="n">Character</span><span class="o">.</span><span class="na">digit</span><span class="o">(</span><span class="n">s</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">end</span><span class="o">-</span><span class="mi">1</span><span class="o">),</span> <span class="mi">10</span><span class="o">);</span>
+            <span class="k">return</span> <span class="o">(</span><span class="n">n</span> <span class="o">&amp;</span> <span class="mi">1</span><span class="o">)</span> <span class="o">==</span> <span class="mi">1</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">};</span>
+
+    <span class="c1">// Match all digits in the pattern but restrict links to only odd</span>
+    <span class="c1">// numbers using the filter.</span>
+    <span class="n">Pattern</span> <span class="n">pattern</span> <span class="o">=</span> <span class="n">Pattern</span><span class="o">.</span><span class="na">compile</span><span class="o">(</span><span class="s">"[0-9]+"</span><span class="o">);</span>
+    <span class="n">Linkify</span><span class="o">.</span><span class="na">addLinks</span><span class="o">(</span><span class="n">text</span><span class="o">,</span> <span class="n">pattern</span><span class="o">,</span> <span class="s">"http://..."</span><span class="o">,</span> <span class="n">oddFilter</span><span class="o">,</span> <span class="kc">null</span><span class="o">);</span>
+</code></pre></div>
+
+
+<p>A more complex (but useful!) example would involve matching valid dates.  The
+regular expression could be generous enough to match strings like "2010-02-30"
+(February 30, 2010), but a match filter could provide the logic to reject
+bogus calendar dates.</p>
+
+<h2>Transform Filters</h2>
+
+<p>Up until this point, the final link was always being generated based on the
+exact matched text.  There are many cases where that is not desirable,
+however.  For example, it's common to mention a username using the <code>@username</code>
+syntax, but the resulting link should only include the <code>username</code> portion of
+the text.  The <a href="http://developer.android.com/reference/android/text/util/Linkify.TransformFilter.html">TransformFilter</a> class provides a solution.</p>
+
+<div class="highlight"><pre><code class="java">    <span class="kn">import</span> <span class="nn">java.util.regex.Pattern</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">android.text.util.Linkify</span><span class="o">;</span>
+    <span class="kn">import</span> <span class="nn">android.text.util.Linkify.TransformFilter</span><span class="o">;</span>
+
+    <span class="c1">// A transform filter that simply returns just the text captured by the</span>
+    <span class="c1">// first regular expression group.</span>
+    <span class="n">TransformFilter</span> <span class="n">mentionFilter</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TransformFilter</span><span class="o">()</span> <span class="o">{</span>
+        <span class="kd">public</span> <span class="kd">final</span> <span class="n">String</span> <span class="nf">transformUrl</span><span class="o">(</span><span class="kd">final</span> <span class="n">Matcher</span> <span class="n">match</span><span class="o">,</span> <span class="n">String</span> <span class="n">url</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="n">match</span><span class="o">.</span><span class="na">group</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">};</span>
+
+    <span class="c1">// Match @mentions and capture just the username portion of the text.</span>
+    <span class="n">Pattern</span> <span class="n">pattern</span> <span class="o">=</span> <span class="n">Pattern</span><span class="o">.</span><span class="na">compile</span><span class="o">(</span><span class="s">"@([A-Za-z0-9_-]+)"</span><span class="o">);</span>
+    <span class="n">String</span> <span class="n">scheme</span> <span class="o">=</span> <span class="s">"http://twitter.com/"</span><span class="o">;</span>
+    <span class="n">Linkify</span><span class="o">.</span><span class="na">addLinks</span><span class="o">(</span><span class="n">text</span><span class="o">,</span> <span class="n">pattern</span><span class="o">,</span> <span class="n">scheme</span><span class="o">,</span> <span class="kc">null</span><span class="o">,</span> <span class="n">mentionFilter</span><span class="o">);</span>
+</code></pre></div>
+
+
+<p>This approach uses the regular expression's capture syntax to extract just the
+username portion of the pattern as a uniquely addressable match group.
+Alternatively, the transform filter could just return all of the matched text
+after the first character (<code>@</code>), but the above approach is nice because it
+keeps all of the pattern's details within the regular expression.</p>
+
+<p>Of course, transform filters can be combined with match filters for ultimate
+flexibility.  The Android SDK uses this approach to detect wide ranges of
+phone number formats (many of which include various parentheses and dashes)
+while always generating a simplified link containing only digits.</p>
+
+<h2>Further Reading</h2>
+
+<p>For more information about the specific implementation details of Android's
+link generation system, the best reference is actually the source code itself.
+In addition to being a good resource for understanding the system, it's also
+the best way to track down potential bugs or misunderstandings about how the
+system is intended to be used.</p>
+
+<ul>
+<li><a href="http://android.git.kernel.org/?p=platform/frameworks/base.git;a=blob;f=core/java/android/text/util/Linkify.java">Linkify.java</a> - The <code>Linkify</code> class itself, including the <code>MatchFilter</code>
+and <code>TransformFilter</code> implementations for the standard link types.</li>
+<li><a href="http://android.git.kernel.org/?p=platform/frameworks/base.git;a=blob;f=core/java/android/text/util/Regex.java">Regex.java</a> - A collection of regular expressions and utility functions
+used by <code>Linkify</code> to work with the standard link types.</li>
+</ul>
+
+
+
+</div> <!-- /ink -->
+
+<div id="social">
+	<iframe style="width: 111px; height: 20px;" data-twttr-rendered="true" title="Twitter Tweet Button" class="twitter-share-button twitter-tweet-button twitter-count-horizontal" src="Android%20Text%20Links%20Using%20Linkify_files/tweet_button.htm" allowtransparency="true" id="twitter-widget-0" frameborder="0" scrolling="no"></iframe><script src="Android%20Text%20Links%20Using%20Linkify_files/ga.js" async="" type="text/javascript"></script><script type="text/javascript" src="Android%20Text%20Links%20Using%20Linkify_files/widgets.js"></script>
+	<iframe src="Android%20Text%20Links%20Using%20Linkify_files/like.htm" style="border:none; overflow:hidden; width:150; height:21px;" allowtransparency="true" frameborder="0" scrolling="no"></iframe>
+	<iframe style="border: 0; margin: 0; padding: 0; float: right" src="Android%20Text%20Links%20Using%20Linkify_files/widget.htm" height="22pt" width="48pt"></iframe>
+</div>
+
+
+<div id="footer">
+Copyright © 1999-2013 by <a rel="author" href="http://www.indelible.org/about/">Jon Parise</a>.
+<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/us/">Some rights reserved.</a>
+</div> <!-- /footer -->
+
+</div> <!-- /container -->
+
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-6933602-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+  
+
+
+</body></html>
