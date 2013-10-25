@@ -2,8 +2,10 @@ package com.academyx.android.photogallery;
 
 import java.util.ArrayList;
 
+import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -28,7 +30,16 @@ public class PhotoGalleryFragment extends Fragment {
 		this.setRetainInstance(true);
 		new FetchItemsTask().execute();
 		
-		mThumbnailThread = new ThumbnailDownloader<ImageView>();
+		mThumbnailThread = new ThumbnailDownloader<ImageView>(new Handler());
+		mThumbnailThread.setListener(new ThumbnailDownloader.Listener<ImageView>() {
+			@Override
+			public void onThumbnailDownloaded(ImageView imageView, Bitmap thumbnail) {
+				if (isVisible()) {
+					imageView.setImageBitmap(thumbnail);
+				}
+				
+			}
+		});
 		mThumbnailThread.start();
 		mThumbnailThread.getLooper();
 		Log.i(TAG, "onCreate() - background thread started ");
@@ -50,7 +61,13 @@ public class PhotoGalleryFragment extends Fragment {
 		super.onDestroy();
 		mThumbnailThread.quit();
 		Log.i(TAG, "onDestroy() - background thread destroyed ");
-		
+	}
+	
+	@Override
+	public void onDestroyView() {
+		Log.i(TAG, "onDestroyView() called ");
+		super.onDestroyView();
+		mThumbnailThread.clearQueue();
 	}
 
 	public void setupAdapter() {
